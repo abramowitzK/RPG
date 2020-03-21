@@ -1,0 +1,7 @@
+C:/Users/Kyle/Documents/2DGames/Pong/subprojects/SDL2-2.0.10/build/CMakeFiles/SDL2-static.dir
+C:/Users/Kyle/Documents/2DGames/Pong/subprojects/SDL2-2.0.10/build/CMakeFiles/SDL2main.dir
+C:/Users/Kyle/Documents/2DGames/Pong/subprojects/SDL2-2.0.10/build/CMakeFiles/INSTALL.dir
+C:/Users/Kyle/Documents/2DGames/Pong/subprojects/SDL2-2.0.10/build/CMakeFiles/SDL2.dir
+C:/Users/Kyle/Documents/2DGames/Pong/subprojects/SDL2-2.0.10/build/CMakeFiles/uninstall.dir
+C:/Users/Kyle/Documents/2DGames/Pong/subprojects/SDL2-2.0.10/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Kyle/Documents/2DGames/Pong/subprojects/SDL2-2.0.10/build/CMakeFiles/ZERO_CHECK.dir
