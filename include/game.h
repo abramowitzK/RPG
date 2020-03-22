@@ -216,6 +216,7 @@ void Update(Game *game, f64 dt, KeyState *keys, MouseState *mouse)
             game->LeftPaddle = {&game->GameObjects[1], game->Height / 2.0f - PaddleHeightOver2, 0.0f, 0};
             game->RightPaddle = {&game->GameObjects[2], game->Height / 2.0f - PaddleHeightOver2, 0.0f, 0};
             game->State = GameState::Menu;
+            UpdateScoreText(game, game->Renderer, game->Font);
         }
     }
     break;
