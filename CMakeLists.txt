@@ -1,5 +1,6 @@
 project(Pong)
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.15)
+set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(deps/SDL2-2.0.10)
 add_subdirectory(deps/freetype-2.10.0)

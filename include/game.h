@@ -10,9 +10,9 @@ constexpr i32 PaddleHeight = 100;
 constexpr i32 PaddleWidth = 20;
 constexpr i32 PaddleHeightOver2 = PaddleHeight / 2;
 constexpr i32 BallWidth = 20;
-constexpr f32 BallSpeed = 1.5f;
-constexpr i32 PlayerSpeed = 2;
-constexpr f32 AISpeed = 1.15f;
+constexpr f32 BallSpeed = 150.0f;
+constexpr i32 PlayerSpeed = 100.0f;
+constexpr f32 AISpeed = 115.0f;
 constexpr i32 ScoreToWin = 5;
 
 enum GameState
@@ -46,7 +46,7 @@ struct Paddle
     SDL_Rect *Rect;
     f32 Pos;
     f32 Vel;
-    i32 Score = 0;
+    i32 Score;
 };
 
 struct Game
@@ -95,9 +95,9 @@ void UpdateScoreText(Game *game, SDL_Renderer *renderer, TTF_Font *font)
 i32 Initialize(Game *game, i32 height, i32 width)
 {
     game->State = GameState::Menu;
-    game->GameBall = {&game->GameObjects[2], {BallSpeed, 0}, {width / 2.0f - BallWidth / 2.0f, height / 2.0f - BallWidth / 2.0f}};
-    game->LeftPaddle = {&game->GameObjects[0], height / 2.0f - PaddleHeightOver2, 0.0f};
-    game->RightPaddle = {&game->GameObjects[1], height / 2.0f - PaddleHeightOver2, 0.0f};
+    game->GameBall = {&game->GameObjects[0], {BallSpeed, 0}, {width / 2.0f - BallWidth / 2.0f, height / 2.0f - BallWidth / 2.0f}};
+    game->LeftPaddle = {&game->GameObjects[1], height / 2.0f - PaddleHeightOver2, 0.0f, 0};
+    game->RightPaddle = {&game->GameObjects[2], height / 2.0f - PaddleHeightOver2, 0.0f, 0};
     if (0 != SDL_Init(SDL_INIT_EVERYTHING))
     {
         return -1;
@@ -116,11 +116,11 @@ i32 Initialize(Game *game, i32 height, i32 width)
 
     game->Font = TTF_OpenFont("fonts/arial.ttf", 20);
     // Left paddle
-    game->GameObjects[0] = {0, (int)height / 2 - PaddleHeightOver2, PaddleWidth, PaddleHeight};
+    game->GameObjects[1] = {0, (int)height / 2 - PaddleHeightOver2, PaddleWidth, PaddleHeight};
     // Right paddle
-    game->GameObjects[1] = {(int)width - PaddleWidth, (int)height / 2 - PaddleHeightOver2, PaddleWidth, PaddleHeight};
+    game->GameObjects[2] = {(int)width - PaddleWidth, (int)height / 2 - PaddleHeightOver2, PaddleWidth, PaddleHeight};
     // Ball
-    game->GameObjects[2] = {(int)width / 2, (int)height / 2, BallWidth, BallWidth};
+    game->GameObjects[0] = {(int)width / 2, (int)height / 2, BallWidth, BallWidth};
     // Top rebounder
     game->GameObjects[3] = {0, -20, (int)width, 20};
     // Bottom rebounder
@@ -155,11 +155,11 @@ void Update(Game *game, f64 dt, KeyState *keys, MouseState *mouse)
     {
     case GameState::Menu:
     {
-        if (KeyPressedThisFrame(keys, SDL_SCANCODE_S))
+        if (KeyPressedThisFrame(keys, SDL_SCANCODE_DOWN))
         {
             game->GameMenu.SelectedMenuOption = (game->GameMenu.SelectedMenuOption + 1) % game->GameMenu.NumMenuOptions;
         }
-        else if (KeyPressedThisFrame(keys, SDL_SCANCODE_W))
+        else if (KeyPressedThisFrame(keys, SDL_SCANCODE_UP))
         {
             game->GameMenu.SelectedMenuOption--;
             if (game->GameMenu.SelectedMenuOption < 0)
@@ -167,7 +167,7 @@ void Update(Game *game, f64 dt, KeyState *keys, MouseState *mouse)
                 game->GameMenu.SelectedMenuOption = game->GameMenu.NumMenuOptions - 1;
             }
         }
-        else if (KeyPressedThisFrame(keys, SDL_SCANCODE_RETURN))
+        else if (KeyPressedThisFrame(keys, SDL_SCANCODE_SPACE))
         {
             // Perform action for currently selected menu item
             MenuItems item = (MenuItems)game->GameMenu.SelectedMenuOption;
@@ -212,9 +212,9 @@ void Update(Game *game, f64 dt, KeyState *keys, MouseState *mouse)
     {
         if (KeyPressedThisFrame(keys, SDL_SCANCODE_SPACE))
         {
-            game->GameBall = {&game->GameObjects[2], {BallSpeed, 0}, {game->Width / 2.0f - BallWidth / 2.0f, game->Height / 2.0f - BallWidth / 2.0f}};
-            game->LeftPaddle = {&game->GameObjects[0], game->Height / 2.0f - PaddleHeightOver2, 0.0f};
-            game->RightPaddle = {&game->GameObjects[1], game->Height / 2.0f - PaddleHeightOver2, 0.0f};
+            game->GameBall = {&game->GameObjects[0], {BallSpeed, 0}, {game->Width / 2.0f - BallWidth / 2.0f, game->Height / 2.0f - BallWidth / 2.0f}};
+            game->LeftPaddle = {&game->GameObjects[1], game->Height / 2.0f - PaddleHeightOver2, 0.0f, 0};
+            game->RightPaddle = {&game->GameObjects[2], game->Height / 2.0f - PaddleHeightOver2, 0.0f, 0};
             game->State = GameState::Menu;
         }
     }
@@ -226,11 +226,11 @@ void FixedUpdate(Game *game, f64 dt, KeyState *keys, MouseState *mouse)
 {
     if (GameState::Menu != game->State)
     {
-        if (IsKeyPressed(keys, SDL_SCANCODE_S))
+        if (IsKeyPressed(keys, SDL_SCANCODE_DOWN))
         {
             game->LeftPaddle.Vel = PlayerSpeed;
         }
-        else if (IsKeyPressed(keys, SDL_SCANCODE_W))
+        else if (IsKeyPressed(keys, SDL_SCANCODE_UP))
         {
             game->LeftPaddle.Vel = -PlayerSpeed;
         }
@@ -346,7 +346,7 @@ void Render(Game *game)
     SDL_SetRenderDrawColor(game->Renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(game->Renderer);
     SDL_SetRenderDrawColor(game->Renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawRects(game->Renderer, game->GameObjects, 5);
+    SDL_RenderFillRects(game->Renderer, game->GameObjects, 5);
     SDL_Rect dst = {20, 20, game->LeftScore.Width, game->LeftScore.Height};
     SDL_RenderCopy(game->Renderer, game->LeftScore.Texture, NULL, &dst);
     dst = {game->Width - 40, 20, game->RightScore.Width, game->RightScore.Height};

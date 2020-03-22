@@ -10,9 +10,17 @@
 #undef main
 bool Running = true;
 Game PongGame = {};
+f64 Freq = static_cast<f64>(SDL_GetPerformanceFrequency());
+u64 Start = SDL_GetPerformanceCounter();
+
+f64 GetTime() {
+    return static_cast<f64>(SDL_GetPerformanceCounter() - Start) / Freq * 10;
+}
 
 int initialize(u32 width, u32 height)
 {
+    Freq = static_cast<f64>(SDL_GetPerformanceFrequency());
+    Start = SDL_GetPerformanceCounter();
 	Initialize(&PongGame, height, width);
 	return 0;
 }
@@ -25,15 +33,15 @@ int main(int argc, char **argv)
 	}
 
 	f64 t = 0.0;
-	f64 dt = 0.01;
-	f64 currentTime = SDL_GetTicks();
+	f64 dt = 1/60.0f;
+	f64 currentTime = GetTime();
 	f64 accumulator = 0.0;
 	SDL_Event event;
 	KeyState keys = {};
 	MouseState mouse = {};
 	while (Running)
 	{
-		f64 newTime = SDL_GetTicks();
+		f64 newTime = GetTime();
 		f64 frameTime = newTime - currentTime;
 		currentTime = newTime;
 		accumulator += frameTime;
