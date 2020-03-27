@@ -1,85 +1,54 @@
 #pragma once
-#include <memory.h>
-#include <utils.h>
-constexpr int Size = 512;
-struct KeyState
+#include <functional>
+#include <vector>
+#include <SDL.h>
+#include <keyState.h>
+#include <mouseState.h>
+
+enum Keys
 {
-    u8 Current[Size];
-    u8 Previous[Size];
+    A = SDL_SCANCODE_A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
+    Space = SDL_SCANCODE_SPACE,
 };
 
-struct MouseState
+enum Intent : uint32_t
 {
-    i32 X;
-    i32 Y;
-    i32 XPrev;
-    i32 YPrev;
+    Shutdown = 0x1,
+    Resize = 0x2,
+    Escape = 0x4,
+    Debug = 0x8,
 };
 
-bool KeyPressedThisFrame(KeyState *state, int code)
+struct Input
 {
-    if (code < Size)
-    {
-        u8 pressedThisFrame = state->Current[code];
-        u8 pressedLastFrame = state->Previous[code];
-        return pressedThisFrame && !pressedLastFrame;
-    }
-
-    return false;
-}
-
-void SetKeyDown(KeyState *state, int code)
-{
-    if (code < Size)
-    {
-        state->Current[code] = true;
-    }
-}
-
-void SetKeyUp(KeyState *state, int code)
-{
-    if (code < Size)
-    {
-        state->Current[code] = false;
-    }
-}
-
-bool IsKeyPressed(KeyState *state, int code)
-{
-    if (code < Size)
-    {
-        return state->Current[code];
-    }
-
-    return false;
-}
-
-void UpdatePrevious(KeyState *state)
-{
-    memcpy(state->Previous, state->Current, Size);
-    memset(state->Current, 0, Size);
-}
-
-void MouseSetPosition(MouseState *state, const int x, const int y)
-{
-    state->X = x;
-    state->Y = y;
-}
-
-int MouseX(MouseState *state)
-{
-    return state->X;
-}
-
-int MouseY(MouseState *state)
-{
-    return state->Y;
-}
-
-void MouseUpdatePrevious(MouseState *state)
-{
-    state->XPrev = state->X;
-    state->YPrev = state->Y;
-    state->X = 0;
-    state->Y = 0;
-}
+    KeyState Keys;
+    MouseState Mouse;
+    Intent Intents;
+    int x;
+    int y;
+};
