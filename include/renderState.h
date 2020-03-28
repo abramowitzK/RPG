@@ -93,7 +93,7 @@ static const RenderState DefaultRenderState = {
     BlendFunc::OneMinusSourceAlpha,
     DepthFunc::Less,
 
-    {0.0, 0.0, 0.0, 1.0},
+    {0, 0, 0, 1},
     FrontFace::Ccw,
     CullFace::Back,
     PolygonMode::Fill};
@@ -106,7 +106,7 @@ static const RenderState DefaultTTFState = {
     BlendFunc::OneMinusSourceAlpha,
     DepthFunc::Less,
 
-    {0.0, 0.0, 0.0, 0.0},
+    {0, 0, 0, 0},
     FrontFace::Ccw,
     CullFace::Back,
     PolygonMode::Fill};

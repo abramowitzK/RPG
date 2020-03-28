@@ -118,11 +118,7 @@ public:
 
 private:
 	void create_render_batches();
-
 	void sort_glyphs();
-
-	bool mIsInitialized = false;
-	bool mIsBegun = false;
 	GLuint mVbo = 0;
 	GLuint mVao = 0;
 	std::vector<Glyph> mGlyphData;

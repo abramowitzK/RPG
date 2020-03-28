@@ -14,11 +14,6 @@ Renderer::Renderer(int width, int height)
 	mHeight = height;
 }
 
-void Renderer::update(double dt) {}
-void Renderer::render()
-{
-}
-
 void Renderer::clear_screen(bool depth, bool color)
 {
 	if (depth)

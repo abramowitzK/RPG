@@ -15,8 +15,6 @@ struct Renderer
 public:
 	Renderer(int width, int height);
 	Renderer(){};
-	void update(double dt);
-	void render();
 	void clear_screen(bool depth, bool color);
 	void handle_resize(int width, int height);
 	void push_render_state(const RenderState &state);

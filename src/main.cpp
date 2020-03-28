@@ -8,10 +8,12 @@
 
 #undef main
 bool Running = true;
-Game State = {};
 int main(int argc, char **argv)
 {
 	Platform platform = Platform("RPG", 800, 600);
+	Game State = {};
+	Initialize(&State, 800, 600);
+	Load(&State);
 	f64 t = 0.0;
 	f64 dt = 1 / 60.0f;
 	f64 currentTime = platform.GetTime();

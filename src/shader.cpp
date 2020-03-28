@@ -2,86 +2,26 @@
 #include <cassert>
 #include <glew.h>
 
-std::string Shader::SHADER_DIR = "..\\..\\shaders\\";
-Shader::Shader()
+void CompileShader(Shader *shader)
 {
-	mProgram = glCreateProgram();
-	if (0 == mProgram)
+	glLinkProgram(shader->mProgram);
+	GLint success;
+	glGetProgramiv(shader->mProgram, GL_LINK_STATUS, &success);
+	if (!success)
 	{
-		//Do error stuff here. For now we're just going to crash horribly
+		GLchar InfoLog[1024];
+		glGetProgramInfoLog(shader->mProgram, sizeof(InfoLog), NULL, InfoLog);
 		assert(false);
 	}
-	//Load default forward passthrough shaders for now. Should add ambient to them
-	load_vertex_shader(SHADER_DIR + "basic.vert");
-	load_fragment_shader(SHADER_DIR + "basic.frag");
-}
-
-Shader::Shader(const std::string &vShaderFileName, const std::string &fShaderFileName)
-{
-	mProgram = glCreateProgram();
-	if (0 == mProgram)
+	glValidateProgram(shader->mProgram);
+	glGetProgramiv(shader->mProgram, GL_VALIDATE_STATUS, &success);
+	if (!success)
 	{
 		assert(false);
 	}
-	load_vertex_shader(SHADER_DIR + vShaderFileName);
-	load_fragment_shader(SHADER_DIR + fShaderFileName);
 }
 
-Shader::Shader(const std::string &vShaderFileName, const std::string &fShaderFileName, const std::string &shaderPath)
-{
-	mProgram = glCreateProgram();
-	if (0 == mProgram)
-	{
-		assert(false);
-	}
-	load_vertex_shader(shaderPath + vShaderFileName);
-	load_fragment_shader(shaderPath + fShaderFileName);
-}
-
-Shader::~Shader()
-{
-	for (GLint i : mShaders)
-	{
-		glDetachShader(mProgram, i);
-		glDeleteShader(i);
-	}
-	glDeleteProgram(mProgram);
-}
-
-void Shader::load_vertex_shader(std::string shaderFileName)
-{
-	shaderFileName = shaderFileName;
-	std::ifstream fs(shaderFileName);
-	std::stringstream buffer;
-	buffer << fs.rdbuf();
-	add_vertex_shader(buffer.str().c_str());
-}
-
-void Shader::load_fragment_shader(std::string shaderFileName)
-{
-	shaderFileName = shaderFileName;
-	std::ifstream fs(shaderFileName);
-	std::stringstream buffer;
-	buffer << fs.rdbuf();
-	add_fragment_shader(buffer.str().c_str());
-}
-
-void Shader::bind()
-{
-	glUseProgram(mProgram);
-}
-
-void Shader::add_vertex_shader(const GLchar *text)
-{
-	add_program(text, GL_VERTEX_SHADER);
-}
-
-void Shader::add_fragment_shader(const GLchar *text)
-{
-	add_program(text, GL_FRAGMENT_SHADER);
-}
-
-void Shader::add_program(const GLchar *text, GLuint type)
+void AddProgram(Shader *s, const GLchar *text, GLuint type)
 {
 	GLint shader = glCreateShader(type);
 	if (0 == shader)
@@ -99,26 +39,61 @@ void Shader::add_program(const GLchar *text, GLuint type)
 		glGetShaderInfoLog(shader, 1024, NULL, InfoLog);
 		assert(false);
 	}
-	glAttachShader(mProgram, shader);
-	mShaders.push_back(shader);
-	compile_shader();
+	glAttachShader(s->mProgram, shader);
+	switch (type)
+	{
+	case GL_VERTEX_SHADER:
+	{
+		s->VertexShader = shader;
+	}
+	break;
+	case GL_FRAGMENT_SHADER:
+	{
+		s->FragmentShader = shader;
+	}
+	break;
+	}
+	CompileShader(s);
 }
 
-void Shader::compile_shader()
+void AddVertexShader(Shader *shader, const GLchar *text)
 {
-	glLinkProgram(mProgram);
-	GLint success;
-	glGetProgramiv(mProgram, GL_LINK_STATUS, &success);
-	if (!success)
+	AddProgram(shader, text, GL_VERTEX_SHADER);
+}
+
+void AddFragmentShader(Shader *shader, const GLchar *text)
+{
+	AddProgram(shader, text, GL_FRAGMENT_SHADER);
+}
+
+bool ShaderInit(Shader *shader)
+{
+	shader->mProgram = glCreateProgram();
+	if (!shader->mProgram)
 	{
-		GLchar InfoLog[1024];
-		glGetProgramInfoLog(mProgram, sizeof(InfoLog), NULL, InfoLog);
-		assert(false);
+		return false;
 	}
-	glValidateProgram(mProgram);
-	glGetProgramiv(mProgram, GL_VALIDATE_STATUS, &success);
-	if (!success)
-	{
-		assert(false);
-	}
+
+	return true;
+}
+
+void ShaderLoadVS(Shader *shader, const char *shaderFilePath)
+{
+	std::ifstream fs(shaderFilePath);
+	std::stringstream buffer;
+	buffer << fs.rdbuf();
+	AddVertexShader(shader, buffer.str().c_str());
+}
+
+void ShaderLoadFS(Shader *shader, const char *shaderFilePath)
+{
+	std::ifstream fs(shaderFilePath);
+	std::stringstream buffer;
+	buffer << fs.rdbuf();
+	AddFragmentShader(shader, buffer.str().c_str());
+}
+
+void ShaderBind(Shader *shader)
+{
+	glUseProgram(shader->mProgram);
 }

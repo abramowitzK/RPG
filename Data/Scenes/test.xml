@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Scene>
+  <ResourceList>
+    <Scripts>
+      <Script name="testing"/>
+      <Script name="player"/>
+    </Scripts>
+    <Materials>
+      <Material name="procedural">
+        <Texture name="grass.png"/>
+        <Texture name="rock.jpg"/>
+        <Shader name="texture_lit_procedural"/>
+      </Material>
+      <Material name="grass">
+        <Texture name="grass.png"/>
+        <Shader name="texturedGouraud"/>
+      </Material>
+      <Material name="basic">
+        <Texture name="stone01.tga"/>
+        <Shader name="texturedGouraud"/>
+      </Material>
+    </Materials>
+    <Shaders>
+      <Shader name="texture_lit_procedural" vert="texture_lit_procedural.vert" frag="texture_list_procedural.frag"/>
+      <Shader name="basic" vert="basic.vert" frag="basic.frag"/>
+      <Shader name="texturedGouraud" vert="texturedGouraud.vert" frag="texturedGouraud.frag"/>
+      <Shader name="texturedLit" vert="texturedLit.vert" frag="texturedLit.frag"/>
+      <Shader name="unlit_textured" vert="unlit_textured.vert" frag="unlit_textured.frag"/>
+    </Shaders>
+    <Textures>
+      <Texture>rock.jpg</Texture>
+      <Texture>grass.png</Texture>
+      <Texture>stone01.tga</Texture>
+    </Textures>
+    <Models>
+      <Model invert="false">monkey.obj</Model>
+      <Model invert="false">cube.obj</Model>
+      <Model invert="true">capsule_fixed.obj</Model>
+    </Models>
+  </ResourceList>
+  <SceneGraph>
+    <GameObject name="playerasdfasdfadfasdfasdf">
+      <Transform>
+        <Pos>50,75,50</Pos>
+        <Rot>0,0,0</Rot>
+        <Scale>1,1,1</Scale>
+      </Transform>
+      <Components>
+        <Script name="player"/>
+        <Model name="capsule_fixed.obj">
+          <Material name="basic"/>
+        </Model>
+        <!--<RigidBody shape="capsule" mesh="cube.obj" static="false"/>-->
+        <CharacterController name="testCC"/>
+        <Camera name="main">
+          <Transform>
+            <Pos>0,0.75,0</Pos>
+            <Rot>0,0,0</Rot>
+            <Scale>1,1,1</Scale>
+          </Transform>
+        </Camera>
+      </Components>
+    </GameObject>
+    <GameObject name="monkey">
+      <Transform>
+        <Pos>40,20,30</Pos>
+        <Rot>0,0,0</Rot>
+        <Scale>1,1,1</Scale>
+      </Transform>
+      <Components>
+        <Script name="testing"/>
+        <Model name="monkey.obj">
+          <Material name="grass"/>
+        </Model>
+      </Components>
+      <GameObject name="child">
+        <Transform>
+          <Pos>10,0,0</Pos>
+          <Rot>0,0,0</Rot>
+          <Scale>2,2,2</Scale>
+        </Transform>
+        <Components>
+          <Model name="capsule_fixed.obj">
+            <Material name="grass"/>
+          </Model>
+        </Components>
+      </GameObject>
+    </GameObject>
+  </SceneGraph>
+</Scene>

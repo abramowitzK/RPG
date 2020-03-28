@@ -15,10 +15,6 @@ SpriteBatch::~SpriteBatch()
 
 void SpriteBatch::init()
 {
-	if (mIsInitialized)
-	{
-		return;
-	}
 	glGenVertexArrays(1, &mVao);
 	glBindVertexArray(mVao);
 	glGenBuffers(1, &mVbo);
@@ -30,7 +26,6 @@ void SpriteBatch::init()
 	glVertexAttribPointer(1, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex2D), (void *)offsetof(Vertex2D, color));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex2D), (void *)offsetof(Vertex2D, uvs));
 	glBindVertexArray(0);
-	mIsInitialized = true;
 }
 
 void SpriteBatch::begin(GlyphSortType type)
@@ -65,7 +60,7 @@ void SpriteBatch::draw(Sprite s)
 void SpriteBatch::render_batches(Renderer *renderer)
 {
 	glBindVertexArray(mVao);
-	default_shader->bind();
+	ShaderBind(default_shader);
 	renderer->push_render_state(sSpriteBatchState);
 	for (int i = 0; i < mBatches.size(); i++)
 	{
