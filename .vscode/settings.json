@@ -69,5 +69,6 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "queue": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

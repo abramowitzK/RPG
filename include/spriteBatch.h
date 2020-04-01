@@ -8,6 +8,20 @@
 #include <rendering.h>
 #include <sprite.h>
 
+const RenderState sSpriteBatchState{
+	CullState::Off,
+	BlendState::On,
+	DepthState::Off,
+
+	BlendFunc::SourceAlpha,
+	BlendFunc::OneMinusSourceAlpha,
+	DepthFunc::Less,
+
+	{0, 0, 0, 0},
+	FrontFace::Ccw,
+	CullFace::Back,
+	PolygonMode::Fill};
+
 struct RenderBatch
 {
 public:
@@ -125,17 +139,4 @@ private:
 	std::vector<Glyph *> mGlyphs;
 	std::vector<RenderBatch> mBatches;
 	GlyphSortType mType;
-	const RenderState sSpriteBatchState{
-		CullState::Off,
-		BlendState::On,
-		DepthState::Off,
-
-		BlendFunc::SourceAlpha,
-		BlendFunc::OneMinusSourceAlpha,
-		DepthFunc::Less,
-
-		{0, 0, 0, 0},
-		FrontFace::Ccw,
-		CullFace::Back,
-		PolygonMode::Fill};
 };

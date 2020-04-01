@@ -20,7 +20,7 @@ Camera::Camera() : Width(0), Height(0), Scale(1.0f), Speed(1000.0), View({})
 Camera::Camera(int w, int h) : Width(w), Height(h), Scale(1.0f), Speed(1000.0), View({})
 {
     Position = {0, 0};
-    Projection = glm::ortho(0.0f, (float)w, 0.0f, (float)h);
+    Projection = glm::ortho(0.0f, (float)w, (float)h, 0.0f, -0.1f, 1000.0f);
 }
 
 void Camera::Update(double dt, Input const &input)

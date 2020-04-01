@@ -60,18 +60,21 @@ void SpriteBatch::draw(Sprite s)
 void SpriteBatch::render_batches(Renderer *renderer)
 {
 	glBindVertexArray(mVao);
-	ShaderBind(default_shader);
 	renderer->push_render_state(sSpriteBatchState);
+	ShaderBind(default_shader);
 	for (int i = 0; i < mBatches.size(); i++)
 	{
+		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, mBatches[i].texture.Tex);
 		glDrawArrays(GL_TRIANGLES, mBatches[i].offset, mBatches[i].numVerts);
 	}
 	renderer->pop_render_state();
+	glBindVertexArray(0);
 }
 
 void SpriteBatch::create_render_batches()
 {
+	glBindVertexArray(mVao);
 	std::vector<Vertex2D> vertices;
 	vertices.resize(mGlyphs.size() * 6);
 	if (mGlyphs.empty())
@@ -106,6 +109,7 @@ void SpriteBatch::create_render_batches()
 	//uploadData
 	glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex2D), vertices.data());
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 }
 
 void SpriteBatch::sort_glyphs()

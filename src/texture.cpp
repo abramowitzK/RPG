@@ -7,7 +7,7 @@
 
 Texture create_2d_texture(const char *filepath)
 {
-	stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(false);
 	Texture t = {};
 	glGenTextures(1, &t.Tex);
 	glActiveTexture(GL_TEXTURE0);

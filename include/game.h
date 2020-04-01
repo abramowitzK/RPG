@@ -9,6 +9,8 @@
 #include <camera.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <level.h>
+#include <map.h>
+#include <player.h>
 
 enum GameState
 {
@@ -24,7 +26,6 @@ enum Intents
     Up,
     Down
 };
-Level GameLevel;
 
 struct Game
 {
@@ -32,12 +33,17 @@ struct Game
     ResourceManager Resources;
     Renderer Rendering;
     SpriteBatch Batcher;
+    Shader *MapShader;
+    std::unique_ptr<Map> GameMap;
+    Camera cam;
+    Player player;
 };
 
 void Initialize(Game *game, i32 width, i32 height)
 {
     game->Batcher.init();
     game->Rendering = Renderer(width, height);
+    game->cam = Camera(width, height);
 }
 
 void Load(Game *game)
@@ -46,33 +52,46 @@ void Load(Game *game)
     auto player = LoadTexture(&game->Resources, "rock.jpg");
 
     auto id = LoadShader(&game->Resources, "spriteBatchBorder");
+    game->MapShader = &game->Resources.Shaders[LoadShader(&game->Resources, "map")];
     game->Batcher.default_shader = &game->Resources.Shaders[id];
-    GameLevel = LevelInit(game->Resources.Textures[tile], game->Resources.Textures[player]);
+    game->GameMap = LoadMap("./Data/Maps/Dungeon.tmx");
+    Sprite s = {};
+    s.Dim = Vector3(32, 32, 1);
+    s.Tex = game->Resources.Textures[player];
+    game->player = {{0, 0}, s};
 }
 
 void Update(Game *game, f64 dt, Input const *mouse)
 {
-    LevelUpdate(&GameLevel, dt, *mouse);
 }
 
 void FixedUpdate(Game *game, f64 dt, Input const *mouse)
 {
+    game->player.Update(dt, *mouse);
+    game->cam.Position = game->player.Position;
+    game->cam.Update(dt, *mouse);
 }
 
 void Render(Game *game)
 {
     game->Rendering.clear_screen(true, true);
-    GameLevel.Camera.Render();
-    auto projection = GameLevel.Camera.View;
+    game->cam.Render();
+    ShaderBind(game->MapShader);
+    glUniform1i(glGetUniformLocation(game->MapShader->mProgram, "u_tileMap"), 0);
+    glUniform1i(glGetUniformLocation(game->MapShader->mProgram, "u_lookupMap"), 1);
+    glUniformMatrix4fv(glGetUniformLocation(game->MapShader->mProgram, "u_projectionMatrix"), 1, GL_FALSE, glm::value_ptr(game->cam.View));
+    game->Rendering.push_render_state(sSpriteBatchState);
+    // Draw floor
+    game->GameMap->Layers[0]->draw();
+    // Draw player
     ShaderBind(game->Batcher.default_shader);
-    auto loc = glGetUniformLocation(game->Batcher.default_shader->mProgram, "projection");
-    glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(projection));
+    glUniformMatrix4fv(glGetUniformLocation(game->Batcher.default_shader->mProgram, "projection"), 1, GL_FALSE, glm::value_ptr(game->cam.View));
     game->Batcher.begin();
-    for (int i = 0; i < NumTiles; ++i)
-    {
-        game->Batcher.draw(GameLevel.Tiles[i]);
-    }
-    game->Batcher.draw(GameLevel.PlayerModel.Graphic);
+    game->Batcher.draw(game->player.Graphic);
     game->Batcher.end();
     game->Batcher.render_batches(&game->Rendering);
+    // Draw walls
+    ShaderBind(game->MapShader);
+    game->GameMap->Layers[1]->draw();
+    game->Rendering.pop_render_state();
 }
