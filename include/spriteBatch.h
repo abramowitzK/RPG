@@ -59,7 +59,7 @@ public:
 		topRight.uvs = {uvRect.x + uvRect.z, uvRect.y + uvRect.w};
 	}
 
-	Glyph::Glyph(const Vector4 &destRect, const Vector4 &uvRect, float depth, Texture Texture, const Color &color, float angle) : texture(Texture),
+	Glyph(const Vector4 &destRect, const Vector4 &uvRect, float depth, Texture Texture, const Color &color, float angle) : texture(Texture),
 																																  depth(depth)
 	{
 		glm::vec2 halfDims(destRect.z / 2.0f, destRect.w / 2.0f);

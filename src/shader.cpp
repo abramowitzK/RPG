@@ -13,12 +13,16 @@ void CompileShader(Shader *shader)
 		glGetProgramInfoLog(shader->mProgram, sizeof(InfoLog), NULL, InfoLog);
 		assert(false);
 	}
+	/*
+	 // Only works against a bound VAO in core mode
 	glValidateProgram(shader->mProgram);
 	glGetProgramiv(shader->mProgram, GL_VALIDATE_STATUS, &success);
 	if (!success)
 	{
+        GLchar InfoLog[1024];
+        glGetProgramInfoLog(shader->mProgram, sizeof(InfoLog), NULL, InfoLog);
 		assert(false);
-	}
+	}*/
 }
 
 void AddProgram(Shader *s, const GLchar *text, GLuint type)

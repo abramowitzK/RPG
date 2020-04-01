@@ -17,7 +17,7 @@ public:
 	void SetScrollAmount(int amt);
 
 private:
-	const static size_t NUM_MOUSE_BUTTONS = 4;
+	const static int NUM_MOUSE_BUTTONS = 4;
 	char mMouseButtonState[NUM_MOUSE_BUTTONS];
 	int mX;
 	int mY;

@@ -7,7 +7,6 @@
 #include <texture.h>
 #include <map>
 #include <memory>
-#include <optional>
 #include <stack>
 
 struct Renderer

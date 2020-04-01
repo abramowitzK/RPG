@@ -15,7 +15,7 @@ void main() {
 
    if (TexCoords.x < maxX && TexCoords.x > minX &&
        TexCoords.y < maxY && TexCoords.y > minY) {
-     outColor = texture2D(myTexture, TexCoords);
+     outColor = texture(myTexture, TexCoords);
    } else {
      outColor = vec4(0.0, 0.0, 0.0, 1.0);
    }

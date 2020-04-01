@@ -27,7 +27,6 @@ struct ResourceManager
 ResourceId LoadTexture(ResourceManager *manager, const char *name)
 {
     manager->Textures[manager->CurrentTexture] = create_2d_texture((TexturePath + name).c_str());
-    strcpy_s(manager->Textures[manager->CurrentTexture].Name, 64, name);
     return manager->CurrentTexture++;
 }
 

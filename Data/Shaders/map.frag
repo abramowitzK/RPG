@@ -1,4 +1,4 @@
-    #version 130
+    #version 330
     #define FLIP_HORIZONTAL 8u
     #define FLIP_VERTICAL 4u
     #define FLIP_DIAGONAL 2u
