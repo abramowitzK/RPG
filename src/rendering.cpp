@@ -3,8 +3,6 @@
 * Copyright (c) 2016 Kyle All rights reserved.
 */
 #include <rendering.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 Renderer::Renderer(int width, int height)
 {

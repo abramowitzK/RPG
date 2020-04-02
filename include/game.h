@@ -56,7 +56,8 @@ void Load(Game *game)
     game->Batcher.default_shader = &game->Resources.Shaders[id];
     game->GameMap = LoadMap("./Data/Maps/Dungeon.tmx");
     Sprite s = {};
-    s.Dim = Vector3(32, 32, 1);
+    s.Pos = Vector3(150, 100, 1);
+    s.Dim = Vector3(20, 20, 1);
     s.Tex = game->Resources.Textures[player];
     game->player = {{0, 0}, s};
 }
@@ -67,8 +68,28 @@ void Update(Game *game, f64 dt, Input const *mouse)
 
 void FixedUpdate(Game *game, f64 dt, Input const *mouse)
 {
+    constexpr int PLAYER_COLLISION_PADDING = 12;
+    auto oldPlayerPos = game->player.Graphic;
     game->player.Update(dt, *mouse);
-    game->cam.Position = game->player.Position;
+    auto newPlayerPos = game->player.Graphic;
+    for (const auto &layer : game->GameMap->Layers) {
+        for (int i = 0; i < layer->m_tiles.size(); ++i) {
+            auto const& tile = layer->m_tiles[i];
+            auto PlayerRect = (Rectangle) {
+                    newPlayerPos.Dim.x,
+                    newPlayerPos.Dim.y,
+                    newPlayerPos.Pos.x,
+                    newPlayerPos.Pos.y
+            };
+
+            if ((tile.Flags != MapTileFlags::Walkable)
+            && CheckCollisionRecs(PlayerRect, tile.Rect)) {
+                // Reset player position (undo player position update!)
+                game->player.Graphic.Pos = oldPlayerPos.Pos;
+            }
+        }
+    }
+    game->cam.Position = game->player.Graphic.Pos;
     game->cam.Update(dt, *mouse);
 }
 

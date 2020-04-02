@@ -1,7 +1,4 @@
 #include <keyState.h>
-#include <cstring>
-#include <cstdlib>
-#include <cassert>
 
 void KeyState::KeyDown(int code)
 {

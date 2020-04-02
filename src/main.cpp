@@ -1,6 +1,4 @@
-#include <stdio.h>
 #include <utils.h>
-#include <string.h>
 #include <game.h>
 #include <input.h>
 #include <platform.h>

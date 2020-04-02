@@ -2,7 +2,6 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl.h>
 #include <imgui/imgui_impl_opengl3.h>
-#include <imgui/imgui_impl_sdl.h>
 #include <glew.h>
 #include <input.h>
 
@@ -21,7 +20,7 @@ Platform::Platform(const char *title, int width, int height)
     m_context = SDL_GL_CreateContext(m_windowHandle);
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetSwapInterval(1);
     GLenum res = glewInit();
     if (res != GLEW_OK)
     {

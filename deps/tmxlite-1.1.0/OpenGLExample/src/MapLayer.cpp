@@ -90,7 +90,6 @@ void MapLayer::createSubsets(const tmx::Map& map, std::size_t layerIdx)
         return;
     }
     const auto layer = dynamic_cast<const tmx::TileLayer*>(layers[layerIdx].get());
-    
     auto bounds = map.getBounds();
     float verts[] = 
     {
@@ -109,7 +108,7 @@ void MapLayer::createSubsets(const tmx::Map& map, std::size_t layerIdx)
         const auto& tileIDs = layer->getTiles();
         std::vector<std::uint16_t> pixelData;
         bool tsUsed = false;
-        
+        const auto& properties = ts.getProperties();
         for(auto y = 0u; y < mapSize.y; ++y)
         {
             for(auto x = 0u; x < mapSize.x; ++x)

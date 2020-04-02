@@ -36,7 +36,6 @@ public:
 
     void draw()
     {
-
         for (const auto &ss : m_subsets)
         {
             glBindVertexArray(ss.vao);
@@ -48,9 +47,15 @@ public:
         }
         glBindVertexArray(0);
     }
+    std::vector<MapTile> m_tiles;
 
 private:
     const std::vector<unsigned> m_tilesetTextures;
+    int m_width;
+    int m_height;
+    int m_tileWidth;
+    int m_tileHeight;
+
     struct Subset final
     {
         unsigned vao = 0;
@@ -71,15 +76,19 @@ private:
         const auto layer = dynamic_cast<const tmx::TileLayer *>(layers[layerIdx].get());
 
         auto bounds = map.getBounds();
-        float verts[] =
-            {
+        float verts[] = {
                 bounds.left, bounds.top, 0.f, 0.f, 0.f,
                 bounds.left + bounds.width, bounds.top, 0.f, 1.f, 0.f,
                 bounds.left, bounds.top + bounds.height, 0.f, 0.f, 1.f,
-                bounds.left + bounds.width, bounds.top + bounds.height, 0.f, 1.f, 1.f};
+                bounds.left + bounds.width, bounds.top + bounds.height, 0.f, 1.f, 1.f
+        };
 
         const auto &mapSize = map.getTileCount();
         const auto &tilesets = map.getTilesets();
+        m_tileWidth = mapSize.x;
+        m_tileHeight = mapSize.y;
+        m_width = m_tileWidth * map.getTileSize().x;
+        m_height = m_tileHeight * map.getTileSize().y;
         for (auto i = 0u; i < tilesets.size(); ++i)
         {
             //check each tile ID to see if it falls in the current tile set
@@ -87,12 +96,35 @@ private:
             const auto &tileIDs = layer->getTiles();
             std::vector<std::uint16_t> pixelData;
             bool tsUsed = false;
-
+            const auto &tiles = ts.getTiles();
             for (auto y = 0u; y < mapSize.y; ++y)
             {
                 for (auto x = 0u; x < mapSize.x; ++x)
                 {
                     auto idx = y * mapSize.x + x;
+                    auto id = tileIDs[idx].ID;
+                    auto tile = ts.getTile(id);
+                    MapTile mapTile;
+                    if (tile) {
+                        auto const &props = tile->properties;
+                        if (std::find_if(props.begin(), props.end(), [](const auto &property) {
+                            return (property.getName() == "Walkable") && property.getBoolValue();
+                        }) != props.end()) {
+                            mapTile.Flags = MapTileFlags::Walkable;
+                        } else  {
+                            mapTile.Flags = MapTileFlags::None;
+                        }
+                    } else {
+                        mapTile.Flags = MapTileFlags::Walkable;
+                    }
+                    mapTile.Rect = {
+                            (float)map.getTileSize().x,
+                            (float)map.getTileSize().y,
+                            (float)x * map.getTileSize().x,
+                            (float)y * map.getTileSize().y
+                    };
+
+                    m_tiles.push_back(mapTile);
                     if (idx < tileIDs.size() && tileIDs[idx].ID >= ts.getFirstGID() && tileIDs[idx].ID < (ts.getFirstGID() + ts.getTileCount()))
                     {
                         pixelData.push_back(static_cast<std::uint16_t>((tileIDs[idx].ID - ts.getFirstGID()) + 1)); //red channel - making sure to index relative to the tileset
