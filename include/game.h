@@ -65,7 +65,8 @@ void Load(Game *game)
 
 void Update(Game *game, f64 dt, Input const *mouse)
 {
-    if (mouse->Intents == Intent::Resize){
+    if (mouse->Intents == Intent::Resize)
+    {
         game->cam.Resize(mouse->x, mouse->y);
     }
 }
@@ -75,17 +76,19 @@ void FixedUpdate(Game *game, f64 dt, Input const *mouse)
     auto oldPlayerPos = game->player.Graphic.Pos;
     game->player.Update(dt, *mouse);
     auto deltas = glm::abs(oldPlayerPos - game->player.Graphic.Pos);
-    for (const auto &layer : game->GameMap->Layers) {
-        for (int i = 0; i < layer->m_tiles.size(); ++i) {
-            auto const& tile = layer->m_tiles[i];
-            auto PlayerRect = (Rectangle) {
-                    game->player.Graphic.Dim.x,
-                    game->player.Graphic.Dim.y,
-                    game->player.Graphic.Pos.x,
-                    game->player.Graphic.Pos.y
-            };
+    for (const auto &layer : game->GameMap->Layers)
+    {
+        for (int i = 0; i < layer->m_tiles.size(); ++i)
+        {
+            auto const &tile = layer->m_tiles[i];
+            Rectangle PlayerRect = {
+                game->player.Graphic.Dim.x,
+                game->player.Graphic.Dim.y,
+                game->player.Graphic.Pos.x,
+                game->player.Graphic.Pos.y};
 
-            if (tile.Flags != MapTileFlags::Walkable) {
+            if (tile.Flags != MapTileFlags::Walkable)
+            {
                 const float Distance = 26.0f;
                 auto playerCenter = PlayerRect.GetCenter();
                 auto tileCenter = tile.Rect.GetCenter();
@@ -93,20 +96,30 @@ void FixedUpdate(Game *game, f64 dt, Input const *mouse)
                 float xDepth = Distance - std::abs(distVector.x);
                 float yDepth = Distance - std::abs(distVector.y);
                 // If both the depths are > 0, then we collided
-                if (xDepth > 0 && yDepth > 0) {
+                if (xDepth > 0 && yDepth > 0)
+                {
                     // Check which collision depth is less
-                    if (std::max(xDepth, 0.0f) < std::max(yDepth, 0.0f)) {
+                    if (std::max(xDepth, 0.0f) < std::max(yDepth, 0.0f))
+                    {
                         // X collision depth is smaller so we push in X direction
-                        if (distVector.x < 0) {
+                        if (distVector.x < 0)
+                        {
                             game->player.Graphic.Pos.x -= xDepth;
-                        } else {
+                        }
+                        else
+                        {
                             game->player.Graphic.Pos.x += xDepth;
                         }
-                    } else {
+                    }
+                    else
+                    {
                         // Y collision depth is smaller so we push in X direction
-                        if (distVector.y < 0) {
+                        if (distVector.y < 0)
+                        {
                             game->player.Graphic.Pos.y -= yDepth;
-                        } else {
+                        }
+                        else
+                        {
                             game->player.Graphic.Pos.y += yDepth;
                         }
                     }
@@ -115,11 +128,15 @@ void FixedUpdate(Game *game, f64 dt, Input const *mouse)
         }
     }
 
-    if (mouse->Mouse.GetLeftButtonDown()){
+    if (mouse->Mouse.GetLeftButtonDown())
+    {
         auto converted = game->cam.ConvertScreenToWorld({mouse->Mouse.GetMouseX(), mouse->Mouse.GetMouseY()});
-        for (const auto& layer : game->GameMap->Layers) {
-            for (const auto& tile : layer->m_tiles) {
-                if (IsPointInRect(tile.Rect, converted)){
+        for (const auto &layer : game->GameMap->Layers)
+        {
+            for (const auto &tile : layer->m_tiles)
+            {
+                if (IsPointInRect(tile.Rect, converted))
+                {
                     game->selected = tile;
                 }
             }
@@ -166,6 +183,4 @@ void Render(Game *game)
     ImGui::Text("%f", game->converted.x);
     ImGui::Text("%f", game->converted.y);
     ImGui::End();
-
-
 }
