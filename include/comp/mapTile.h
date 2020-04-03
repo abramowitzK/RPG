@@ -13,6 +13,10 @@ struct Rectangle {
     float height;
     float x;
     float y;
+
+    Vector2 GetCenter() const {
+        return {x + (width/2.0), y + (height/2.0)};
+    }
 };
 // Represents a tile on a map
 struct MapTile
@@ -27,12 +31,14 @@ struct MapTile
 
 static bool CheckCollisionRecs(Rectangle rec1, Rectangle rec2)
 {
-    bool collision = false;
+    float dx = std::abs((rec1.x + rec1.width/2) - (rec2.x + rec2.width/2));
+    float dy = std::abs((rec1.y + rec1.height/2) - (rec2.y + rec2.height/2));
+    return (dx <= (rec1.width / 2 + rec2.width / 2)) && ((dy <= (rec1.height / 2 + rec2.height / 2)));
+}
 
-    int dx = abs((rec1.x + rec1.width/2) - (rec2.x + rec2.width/2));
-    int dy = abs((rec1.y + rec1.height/2) - (rec2.y + rec2.height/2));
-
-    if ((dx <= (rec1.width/2 + rec2.width/2)) && ((dy <= (rec1.height/2 + rec2.height/2)))) collision = true;
-
-    return collision;
+// function to find if given point
+// lies inside a given rectangle or not.
+bool IsPointInRect(Rectangle rect, Vector2 point)
+{
+    return point.x > rect.x && point.x < (rect.x + rect.width) && point.y > rect.y && point.y < (rect.y + rect.height);
 }

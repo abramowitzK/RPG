@@ -26,8 +26,6 @@ public:
             {
                 glDeleteTextures(1, &ss.lookup);
             }
-            //don't delete the tileset textures as these are
-            //shared and deleted elsewhere
         }
     }
 

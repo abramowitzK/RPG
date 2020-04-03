@@ -11,6 +11,7 @@
 #include <level.h>
 #include <map.h>
 #include <player.h>
+#include <imgui.h>
 
 enum GameState
 {
@@ -37,6 +38,8 @@ struct Game
     std::unique_ptr<Map> GameMap;
     Camera cam;
     Player player;
+    MapTile selected;
+    Vector2 converted;
 };
 
 void Initialize(Game *game, i32 width, i32 height)
@@ -48,9 +51,7 @@ void Initialize(Game *game, i32 width, i32 height)
 
 void Load(Game *game)
 {
-    auto tile = LoadTexture(&game->Resources, "default.png");
     auto player = LoadTexture(&game->Resources, "rock.jpg");
-
     auto id = LoadShader(&game->Resources, "spriteBatchBorder");
     game->MapShader = &game->Resources.Shaders[LoadShader(&game->Resources, "map")];
     game->Batcher.default_shader = &game->Resources.Shaders[id];
@@ -64,28 +65,63 @@ void Load(Game *game)
 
 void Update(Game *game, f64 dt, Input const *mouse)
 {
+    if (mouse->Intents == Intent::Resize){
+        game->cam.Resize(mouse->x, mouse->y);
+    }
 }
 
 void FixedUpdate(Game *game, f64 dt, Input const *mouse)
 {
-    constexpr int PLAYER_COLLISION_PADDING = 12;
-    auto oldPlayerPos = game->player.Graphic;
+    auto oldPlayerPos = game->player.Graphic.Pos;
     game->player.Update(dt, *mouse);
-    auto newPlayerPos = game->player.Graphic;
+    auto deltas = glm::abs(oldPlayerPos - game->player.Graphic.Pos);
     for (const auto &layer : game->GameMap->Layers) {
         for (int i = 0; i < layer->m_tiles.size(); ++i) {
             auto const& tile = layer->m_tiles[i];
             auto PlayerRect = (Rectangle) {
-                    newPlayerPos.Dim.x,
-                    newPlayerPos.Dim.y,
-                    newPlayerPos.Pos.x,
-                    newPlayerPos.Pos.y
+                    game->player.Graphic.Dim.x,
+                    game->player.Graphic.Dim.y,
+                    game->player.Graphic.Pos.x,
+                    game->player.Graphic.Pos.y
             };
 
-            if ((tile.Flags != MapTileFlags::Walkable)
-            && CheckCollisionRecs(PlayerRect, tile.Rect)) {
-                // Reset player position (undo player position update!)
-                game->player.Graphic.Pos = oldPlayerPos.Pos;
+            if (tile.Flags != MapTileFlags::Walkable) {
+                const float Distance = 26.0f;
+                auto playerCenter = PlayerRect.GetCenter();
+                auto tileCenter = tile.Rect.GetCenter();
+                auto distVector = playerCenter - tileCenter;
+                float xDepth = Distance - std::abs(distVector.x);
+                float yDepth = Distance - std::abs(distVector.y);
+                // If both the depths are > 0, then we collided
+                if (xDepth > 0 && yDepth > 0) {
+                    // Check which collision depth is less
+                    if (std::max(xDepth, 0.0f) < std::max(yDepth, 0.0f)) {
+                        // X collision depth is smaller so we push in X direction
+                        if (distVector.x < 0) {
+                            game->player.Graphic.Pos.x -= xDepth;
+                        } else {
+                            game->player.Graphic.Pos.x += xDepth;
+                        }
+                    } else {
+                        // Y collision depth is smaller so we push in X direction
+                        if (distVector.y < 0) {
+                            game->player.Graphic.Pos.y -= yDepth;
+                        } else {
+                            game->player.Graphic.Pos.y += yDepth;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (mouse->Mouse.GetLeftButtonDown()){
+        auto converted = game->cam.ConvertScreenToWorld({mouse->Mouse.GetMouseX(), mouse->Mouse.GetMouseY()});
+        for (const auto& layer : game->GameMap->Layers) {
+            for (const auto& tile : layer->m_tiles) {
+                if (IsPointInRect(tile.Rect, converted)){
+                    game->selected = tile;
+                }
             }
         }
     }
@@ -115,4 +151,21 @@ void Render(Game *game)
     ShaderBind(game->MapShader);
     game->GameMap->Layers[1]->draw();
     game->Rendering.pop_render_state();
+
+    ImGui::Begin("Player Pos", 0);
+    ImGui::Text("%f", game->player.Graphic.Pos.x);
+    ImGui::Text("%f", game->player.Graphic.Pos.y);
+    ImGui::End();
+
+    ImGui::Begin("Selected", 0);
+    ImGui::Text("%f", game->selected.Rect.x);
+    ImGui::Text("%f", game->selected.Rect.y);
+    ImGui::End();
+
+    ImGui::Begin("Converted", 0);
+    ImGui::Text("%f", game->converted.x);
+    ImGui::Text("%f", game->converted.y);
+    ImGui::End();
+
+
 }

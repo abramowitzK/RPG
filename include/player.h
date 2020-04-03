@@ -3,8 +3,8 @@
 #include <sprite.h>
 #include <input.h>
 
-constexpr float Speed = 2.0f;
-
+constexpr float Speed = 8.0f;
+constexpr float Accel = 1.0f;
 struct Player
 {
     Vector2 Position;
@@ -19,7 +19,5 @@ struct Player
             Graphic.Pos.x += Speed;
         if (input.Keys.IsKeyPressed(Keys::S))
             Graphic.Pos.y += Speed;
-
-//        Graphic.Pos = Vector3(Position.x, Position.y, 1.0f);
     }
 };

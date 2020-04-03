@@ -56,7 +56,7 @@ void Camera::Render()
 Vector2 Camera::ConvertScreenToWorld(glm::vec2 screenCoords) const
 {
     // Invert Y direction
-    screenCoords.y = Height - screenCoords.y;
+    //screenCoords.y = Height - screenCoords.y;
     // Make it so that 0 is the center
     screenCoords -= Vector2(Width / 2.0f, Height / 2.0f);
     // Translate with the camera position
@@ -70,6 +70,6 @@ void Camera::Resize(int w, int h)
 {
     Width = w;
     Height = h;
-    Projection = glm::ortho(0.0f, (float)w, 0.0f, (float)h);
+    Projection = glm::ortho(0.0f, (float)w, (float)h,0.0f);
     glViewport(0, 0, w, h);
 }
