@@ -29,6 +29,11 @@ struct Player
         if (CurrentIndexInPath <= Path.Index)
         {
             auto currentDest = Path.Tiles[CurrentIndexInPath];
+            if (currentDest.Flags != MapTileFlags::Walkable)
+            {
+                return;
+            }
+
             auto dir = glm::normalize(currentDest.Rect.GetCenter() - Vector2(Graphic.Pos.x, Graphic.Pos.y));
             if (IsPointInRect(currentDest.Rect, Vector2(Graphic.Pos)))
             {

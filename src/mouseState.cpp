@@ -32,9 +32,9 @@ bool MouseState::GetLeftButtonDown() const
 	return mMouseButtonState[0];
 }
 
-bool MouseState::GetLeftButtonDownThisFrame() const
+bool MouseState::GetLeftButtonHeld() const
 {
-	return mMouseButtonState[0] && !mPrevMouseButtonState[0];
+	return mPrevMouseButtonState[0];
 }
 
 void MouseState::SetLeftButton(bool down)
@@ -76,5 +76,4 @@ void MouseState::IncrementRelativePosition(int x, int y)
 void MouseState::UpdatePrev()
 {
 	memcpy(mPrevMouseButtonState, mMouseButtonState, 4);
-	memset(mMouseButtonState, 0, 4);
 }

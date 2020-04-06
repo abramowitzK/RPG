@@ -86,7 +86,7 @@ void Update(Game *game, f64 dt, Input const *input)
         }
     }
 
-    if (input->Mouse.GetLeftButtonDownThisFrame())
+    if (input->Mouse.GetLeftButtonHeld())
     {
         game->player.Path = {};
         game->player.CurrentIndexInPath = 1;
@@ -103,61 +103,7 @@ void Update(Game *game, f64 dt, Input const *input)
 
 void FixedUpdate(Game *game, f64 dt, Input const *mouse)
 {
-    auto oldPlayerPos = game->player.Graphic.Pos;
     game->player.Update(dt, *mouse);
-    auto deltas = glm::abs(oldPlayerPos - game->player.Graphic.Pos);
-    // for (const auto &layer : game->GameMap->Layers)
-    // {
-    //     for (int i = 0; i < layer->m_tiles.size(); ++i)
-    //     {
-    //         auto const &tile = layer->m_tiles[i];
-    //         Rectangle PlayerRect = {
-    //             game->player.Graphic.Dim.x,
-    //             game->player.Graphic.Dim.y,
-    //             game->player.Graphic.Pos.x,
-    //             game->player.Graphic.Pos.y};
-
-    //         if (tile.Flags != MapTileFlags::Walkable)
-    //         {
-    //             const float Distance = 26.0f;
-    //             auto playerCenter = PlayerRect.GetCenter();
-    //             auto tileCenter = tile.Rect.GetCenter();
-    //             auto distVector = playerCenter - tileCenter;
-    //             float xDepth = Distance - std::abs(distVector.x);
-    //             float yDepth = Distance - std::abs(distVector.y);
-    //             // If both the depths are > 0, then we collided
-    //             if (xDepth > 0 && yDepth > 0)
-    //             {
-    //                 // Check which collision depth is less
-    //                 if (std::max(xDepth, 0.0f) < std::max(yDepth, 0.0f))
-    //                 {
-    //                     // X collision depth is smaller so we push in X direction
-    //                     if (distVector.x < 0)
-    //                     {
-    //                         game->player.Graphic.Pos.x -= xDepth;
-    //                     }
-    //                     else
-    //                     {
-    //                         game->player.Graphic.Pos.x += xDepth;
-    //                     }
-    //                 }
-    //                 else
-    //                 {
-    //                     // Y collision depth is smaller so we push in X direction
-    //                     if (distVector.y < 0)
-    //                     {
-    //                         game->player.Graphic.Pos.y -= yDepth;
-    //                     }
-    //                     else
-    //                     {
-    //                         game->player.Graphic.Pos.y += yDepth;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-
     game->cam.Position = game->player.Graphic.Pos;
     game->cam.Update(dt, *mouse);
 }
@@ -165,11 +111,12 @@ void FixedUpdate(Game *game, f64 dt, Input const *mouse)
 void Render(Game *game)
 {
 
-    static bool RenderFloor;
-    static bool RenderWalls;
+    static bool RenderFloor = true;
+    static bool RenderWalls = true;
     ImGui::Begin("Debug Options", 0);
     ImGui::Checkbox("RenderFloor", &RenderFloor);
     ImGui::Checkbox("RenderWalls", &RenderWalls);
+    ImGui::Text("PathLength %d", game->player.Path.Index + 1);
     ImGui::End();
     game->Rendering.clear_screen(true, true);
     game->cam.Render();

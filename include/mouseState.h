@@ -8,7 +8,7 @@ public:
 	int GetMouseRelativeX() const;
 	int GetMouseRelativeY() const;
 	bool GetLeftButtonDown() const;
-	bool GetLeftButtonDownThisFrame() const;
+	bool GetLeftButtonHeld() const;
 	void SetLeftButton(bool down);
 	bool GetRightButtonDown() const;
 	void SetRightButtonDown(bool down);

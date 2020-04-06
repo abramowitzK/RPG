@@ -10,7 +10,7 @@
 
 struct Path
 {
-    static const u32 MaxPath = 32;
+    static const u32 MaxPath = 64;
     MapTile Tiles[MaxPath]; // Tiles contained in path
     u32 Index = 0;          // Num tiles -1
 };
@@ -64,15 +64,15 @@ public:
         {
             return false;
         }
-        if (EndTile.Flags != MapTileFlags::Walkable)
-        {
-            return false;
-        }
+        // if (EndTile.Flags != MapTileFlags::Walkable)
+        // {
+        //     return false;
+        // }
 
         std::queue<MapTile> Queue;
-        std::vector<bool> Visited;
-        std::vector<i32> Pred;
-        std::vector<u32> Dist;
+        static std::vector<bool> Visited;
+        static std::vector<i32> Pred;
+        static std::vector<u32> Dist;
         Visited.resize(m_tiles.size());
         Pred.resize(m_tiles.size());
         Dist.resize(m_tiles.size());
@@ -98,7 +98,7 @@ public:
             // Get element off queue and check all child nodes
             if (index == EndTile.Index)
             {
-                if (Dist[EndTile.Index] > Path::MaxPath)
+                if (Dist[EndTile.Index] >= Path::MaxPath)
                 {
                     return false;
                 }
@@ -120,14 +120,14 @@ public:
 
             // what to add to our index to get our neighbors in 2d space
             const i32 Neighbors[] = {
-                //-101, //TopLeft
                 -100, //Top
-                //-99,  //TopRight
-                -1, //Left
-                1,  //Right
-                //99,   //BottomLeft
-                100, //Bottom
-                     // 101,  //BottomRight
+                100,  //Bottom
+                -1,   //Left
+                1,    //Right
+                -99,  //TopRight
+                99,   //BottomLeft
+                -101, //TopLeft
+                101,  //BottomRight
             };
 
             for (int i = 0; i < ARRAY_SIZE(Neighbors); ++i)
