@@ -45,6 +45,7 @@ int main(int argc, char **argv)
 		ImGui::End();
 		Render(&State);
 		platform.EndFrame();
+		input.Mouse.UpdatePrev();
 	}
 
 	SDL_Quit();

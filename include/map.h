@@ -1,3 +1,4 @@
+#pragma once
 #include <tmxlite/Map.hpp>
 #include <tmxlite/Layer.hpp>
 #include <tmxlite/TileLayer.hpp>
@@ -5,6 +6,14 @@
 #include <tileSheet.h>
 #include <comp/mapTile.h>
 #include <vector>
+#include <queue>
+
+struct Path
+{
+    static const u32 MaxPath = 32;
+    MapTile Tiles[MaxPath]; // Tiles contained in path
+    u32 Index = 0;          // Num tiles -1
+};
 
 class MapLayer final
 {
@@ -47,6 +56,138 @@ public:
     }
     std::vector<MapTile> m_tiles;
 
+    bool FindPath(Vector2 Start, Vector2 End, Path *out)
+    {
+        MapTile StartTile;
+        MapTile EndTile;
+        if (!GetTileAtPoint(Start, &StartTile) || !GetTileAtPoint(End, &EndTile))
+        {
+            return false;
+        }
+        if (EndTile.Flags != MapTileFlags::Walkable)
+        {
+            return false;
+        }
+
+        std::queue<MapTile> Queue;
+        std::vector<bool> Visited;
+        std::vector<i32> Pred;
+        std::vector<u32> Dist;
+        Visited.resize(m_tiles.size());
+        Pred.resize(m_tiles.size());
+        Dist.resize(m_tiles.size());
+
+        // TODO optimize this
+        for (int i = 0; i < m_tiles.size(); i++)
+        {
+            Visited[i] = false;
+            Dist[i] = INT_MAX;
+            Pred[i] = -1;
+        }
+
+        //Push on the starting tile
+        Queue.push({StartTile});
+        Visited[StartTile.Index] = true;
+        Dist[StartTile.Index] = 0;
+        while (!Queue.empty())
+        {
+            auto element = Queue.front();
+            auto index = element.Index;
+            Queue.pop();
+
+            // Get element off queue and check all child nodes
+            if (index == EndTile.Index)
+            {
+                if (Dist[EndTile.Index] > Path::MaxPath)
+                {
+                    return false;
+                }
+                // we found a path to the end!
+                // vector path stores the shortest pat
+                u32 Length = Dist[EndTile.Index];
+                i32 crawl = EndTile.Index;
+                i32 Index = Length;
+                out->Tiles[Index] = EndTile;
+                out->Index = Index;
+                while (Pred[crawl] != -1)
+                {
+                    out->Tiles[--Index] = m_tiles[Pred[crawl]];
+                    crawl = Pred[crawl];
+                }
+
+                return true;
+            }
+
+            // what to add to our index to get our neighbors in 2d space
+            const i32 Neighbors[] = {
+                //-101, //TopLeft
+                -100, //Top
+                //-99,  //TopRight
+                -1, //Left
+                1,  //Right
+                //99,   //BottomLeft
+                100, //Bottom
+                     // 101,  //BottomRight
+            };
+
+            for (int i = 0; i < ARRAY_SIZE(Neighbors); ++i)
+            {
+                // Index of this neighbor
+                i32 LocalIndex = index + Neighbors[i];
+                // If this index doesn't exist in this layer, ignore it
+                if (LocalIndex >= m_tiles.size() || LocalIndex < 0)
+                {
+                    continue;
+                }
+
+                //Don't visit again if already visited
+                if (Visited[LocalIndex])
+                {
+                    continue;
+                }
+
+                if (m_tiles[LocalIndex].Flags != MapTileFlags::Walkable)
+                {
+                    Visited[LocalIndex] = true;
+                    continue;
+                }
+
+                Pred[LocalIndex] = element.Index;
+                Dist[LocalIndex] = Dist[element.Index] + 1;
+                Visited[LocalIndex] = true;
+                Queue.push(m_tiles[LocalIndex]);
+            }
+        }
+
+        return false;
+    }
+
+    bool GetTileAtPoint(Vector2 Point, MapTile *out)
+    {
+        for (u32 i = 0u; i < m_tiles.size(); ++i)
+        {
+            if (IsPointInRect(m_tiles[i].Rect, Point))
+            {
+                *out = m_tiles[i];
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void HighlightTile(i32 idx)
+    {
+        m_subsets.back().pixelData[idx] = 0;
+        glBindTexture(GL_TEXTURE_2D, m_subsets.back().lookup);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16UI, m_tileWidth, m_tileHeight, 0, GL_RG_INTEGER, GL_UNSIGNED_SHORT, (void *)m_subsets.back().pixelData.data());
+    }
+
+    void RestoreOldPixelData()
+    {
+        m_subsets.back().pixelData = m_subsets.back().OldPixelData;
+    }
+
 private:
     const std::vector<unsigned> m_tilesetTextures;
     int m_width;
@@ -60,6 +201,8 @@ private:
         unsigned vbo = 0;
         unsigned texture = 0;
         unsigned lookup = 0;
+        std::vector<std::uint16_t> pixelData;
+        std::vector<u16> OldPixelData;
     };
     std::vector<Subset> m_subsets;
 
@@ -75,11 +218,10 @@ private:
 
         auto bounds = map.getBounds();
         float verts[] = {
-                bounds.left, bounds.top, 0.f, 0.f, 0.f,
-                bounds.left + bounds.width, bounds.top, 0.f, 1.f, 0.f,
-                bounds.left, bounds.top + bounds.height, 0.f, 0.f, 1.f,
-                bounds.left + bounds.width, bounds.top + bounds.height, 0.f, 1.f, 1.f
-        };
+            bounds.left, bounds.top, 0.f, 0.f, 0.f,
+            bounds.left + bounds.width, bounds.top, 0.f, 1.f, 0.f,
+            bounds.left, bounds.top + bounds.height, 0.f, 0.f, 1.f,
+            bounds.left + bounds.width, bounds.top + bounds.height, 0.f, 1.f, 1.f};
 
         const auto &mapSize = map.getTileCount();
         const auto &tilesets = map.getTilesets();
@@ -103,25 +245,30 @@ private:
                     auto id = tileIDs[idx].ID;
                     auto tile = ts.getTile(id);
                     MapTile mapTile;
-                    if (tile) {
+                    if (tile)
+                    {
                         auto const &props = tile->properties;
                         if (std::find_if(props.begin(), props.end(), [](const auto &property) {
-                            return (property.getName() == "Walkable") && property.getBoolValue();
-                        }) != props.end()) {
+                                return (property.getName() == "Walkable") && property.getBoolValue();
+                            }) != props.end())
+                        {
                             mapTile.Flags = MapTileFlags::Walkable;
-                        } else  {
+                        }
+                        else
+                        {
                             mapTile.Flags = MapTileFlags::None;
                         }
-                    } else {
+                    }
+                    else
+                    {
                         mapTile.Flags = MapTileFlags::Walkable;
                     }
                     mapTile.Rect = {
-                            (float)map.getTileSize().x,
-                            (float)map.getTileSize().y,
-                            (float)x * map.getTileSize().x,
-                            (float)y * map.getTileSize().y
-                    };
-
+                        (float)map.getTileSize().x,
+                        (float)map.getTileSize().y,
+                        (float)x * map.getTileSize().x,
+                        (float)y * map.getTileSize().y};
+                    mapTile.Index = idx;
                     m_tiles.push_back(mapTile);
                     if (idx < tileIDs.size() && tileIDs[idx].ID >= ts.getFirstGID() && tileIDs[idx].ID < (ts.getFirstGID() + ts.getTileCount()))
                     {
@@ -143,6 +290,8 @@ private:
             {
                 m_subsets.emplace_back();
                 m_subsets.back().texture = m_tilesetTextures[i];
+                m_subsets.back().pixelData = pixelData;
+                m_subsets.back().OldPixelData = pixelData;
                 glGenVertexArrays(1, &m_subsets.back().vao);
                 glBindVertexArray(m_subsets.back().vao);
                 glGenBuffers(1, &m_subsets.back().vbo);

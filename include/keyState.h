@@ -1,5 +1,5 @@
 #pragma once
-#include <stdint.h>
+#include <utils.h>
 
 class KeyState
 {
@@ -22,6 +22,6 @@ public:
 	bool IsKeyPressed(const int code) const;
 
 private:
-	static const uint32_t INPUT_SIZE = 512;
+	static const u32 INPUT_SIZE = 512;
 	bool m_keyboardState[INPUT_SIZE];
 };

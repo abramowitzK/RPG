@@ -26,6 +26,8 @@
             offset *= u_tileSize / u_tilesetCount;
             colour = texture(u_tileMap, position + offset);
             colour.a = min(colour.a, u_opacity);
+        } else if (values.g > 0u) {
+            colour = vec4(1.0,0.0,0.0,1.0);
         }
         else
         {

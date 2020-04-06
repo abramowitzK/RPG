@@ -1,4 +1,6 @@
 #include <mouseState.h>
+#include <memory.h>
+
 void MouseState::SetPosition(const int x, const int y)
 {
 	mX = x;
@@ -28,6 +30,11 @@ int MouseState::GetMouseRelativeY() const
 bool MouseState::GetLeftButtonDown() const
 {
 	return mMouseButtonState[0];
+}
+
+bool MouseState::GetLeftButtonDownThisFrame() const
+{
+	return mMouseButtonState[0] && !mPrevMouseButtonState[0];
 }
 
 void MouseState::SetLeftButton(bool down)
@@ -64,4 +71,10 @@ void MouseState::IncrementRelativePosition(int x, int y)
 {
 	mXRel += x;
 	mYRel += y;
+}
+
+void MouseState::UpdatePrev()
+{
+	memcpy(mPrevMouseButtonState, mMouseButtonState, 4);
+	memset(mMouseButtonState, 0, 4);
 }
