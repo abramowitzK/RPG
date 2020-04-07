@@ -10,7 +10,7 @@
 
 struct Path
 {
-    static const u32 MaxPath = 64;
+    static const u32 MaxPath = 32;
     MapTile Tiles[MaxPath]; // Tiles contained in path
     u32 Index = 0;          // Num tiles -1
 };

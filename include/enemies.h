@@ -1,6 +1,6 @@
 #pragma once
 #include <sprite.h>
-const f64 EnemyTickTime = 0.25;
+const f64 EnemyTickTime = 0.1;
 const f32 EnemySpeed = 4.0f;
 struct enemy_t
 {
@@ -24,17 +24,18 @@ struct enemy_t
         if (CurrentIndexInPath <= CurrentPath.Index)
         {
             auto currentDest = CurrentPath.Tiles[CurrentIndexInPath];
+            if (IsPointInRect(currentDest.Rect, Vector2(Graphic.Pos)))
+            {
+                CurrentIndexInPath++;
+                currentDest = CurrentPath.Tiles[CurrentIndexInPath];
+            }
+
             if (currentDest.Flags != MapTileFlags::Walkable)
             {
                 return;
             }
 
             auto dir = glm::normalize(currentDest.Rect.GetCenter() - Vector2(Graphic.Pos.x, Graphic.Pos.y));
-            if (IsPointInRect(currentDest.Rect, Vector2(Graphic.Pos)))
-            {
-                CurrentIndexInPath++;
-                return;
-            }
             Graphic.Pos += Vector3(dir * EnemySpeed, 0.0f);
         }
     }

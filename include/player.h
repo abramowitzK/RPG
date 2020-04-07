@@ -29,17 +29,18 @@ struct Player
         if (CurrentIndexInPath <= Path.Index)
         {
             auto currentDest = Path.Tiles[CurrentIndexInPath];
+            if (IsPointInRect(currentDest.Rect, Vector2(Graphic.Pos)))
+            {
+                CurrentIndexInPath++;
+                currentDest = Path.Tiles[CurrentIndexInPath];
+            }
+
             if (currentDest.Flags != MapTileFlags::Walkable)
             {
                 return;
             }
 
             auto dir = glm::normalize(currentDest.Rect.GetCenter() - Vector2(Graphic.Pos.x, Graphic.Pos.y));
-            if (IsPointInRect(currentDest.Rect, Vector2(Graphic.Pos)))
-            {
-                CurrentIndexInPath++;
-                return;
-            }
             Graphic.Pos += Vector3(dir * Speed, 0.0f);
         }
     }
