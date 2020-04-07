@@ -59,10 +59,11 @@ Vector2 Camera::ConvertScreenToWorld(glm::vec2 screenCoords) const
     //screenCoords.y = Height - screenCoords.y;
     // Make it so that 0 is the center
     screenCoords -= Vector2(Width / 2.0f, Height / 2.0f);
+    screenCoords /= Scale;
     // Translate with the camera position
     screenCoords += Position;
     // Scale the coordinates
-    screenCoords /= Scale;
+
     return screenCoords;
 }
 
@@ -70,6 +71,6 @@ void Camera::Resize(int w, int h)
 {
     Width = w;
     Height = h;
-    Projection = glm::ortho(0.0f, (float)w, (float)h,0.0f);
+    Projection = glm::ortho(0.0f, (float)w, (float)h, 0.0f);
     glViewport(0, 0, w, h);
 }

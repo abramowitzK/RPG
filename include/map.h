@@ -70,20 +70,16 @@ public:
         // }
 
         std::queue<MapTile> Queue;
-        static std::vector<bool> Visited;
+        static std::vector<u8> Visited;
         static std::vector<i32> Pred;
         static std::vector<u32> Dist;
         Visited.resize(m_tiles.size());
         Pred.resize(m_tiles.size());
         Dist.resize(m_tiles.size());
 
-        // TODO optimize this
-        for (int i = 0; i < m_tiles.size(); i++)
-        {
-            Visited[i] = false;
-            Dist[i] = INT_MAX;
-            Pred[i] = -1;
-        }
+        std::fill(Visited.begin(), Visited.end(), false);
+        std::fill(Dist.begin(), Dist.end(), INT_MAX);
+        std::fill(Pred.begin(), Pred.end(), -1);
 
         //Push on the starting tile
         Queue.push({StartTile});

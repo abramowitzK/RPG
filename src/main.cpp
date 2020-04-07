@@ -32,11 +32,11 @@ int main(int argc, char **argv)
 		while (accumulator >= dt)
 		{
 			accumulator -= dt;
-			FixedUpdate(&State, dt, &input);
+			FixedUpdate(&State, dt, &input, platform.GetTime());
 			t += dt;
 		}
 
-		Update(&State, frameTime, &input);
+		Update(&State, frameTime, &input, platform.GetTime());
 		platform.BeginFrame();
 		ImGui::Begin("Mouse Pos", 0);
 		ImGui::Text("%d", input.Mouse.GetMouseX());
