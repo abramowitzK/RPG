@@ -8,6 +8,7 @@ struct enemy_t
     Path CurrentPath;
     i32 CurrentIndexInPath;
     u64 LastTickTime;
+    u32 Health = 1;
     void Update(double dt)
     {
         FollowPath(dt);

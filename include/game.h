@@ -12,6 +12,7 @@
 #include <player.h>
 #include <imgui.h>
 #include <enemies.h>
+#include <bullet.h>
 
 enum GameState
 {
@@ -31,6 +32,7 @@ enum Intents
 struct Game
 {
     static const int NumEnemies = 16;
+    static const int NumBullets = 16;
     GameState State;
     ResourceManager Resources;
     Renderer Rendering;
@@ -45,6 +47,10 @@ struct Game
     enemy_t Enemies[NumEnemies];
     i32 CurrentEnemyIndex = 0;
     Sprite EnemySprite;
+    bullet_t Bullets[NumBullets];
+    i32 CurrentBulletIndex = 0;
+    Sprite BulletSprite;
+    f64 LastPlayerBullet = 0.0;
 };
 
 void Initialize(Game *game, i32 width, i32 height)
@@ -53,13 +59,14 @@ void Initialize(Game *game, i32 width, i32 height)
     game->Rendering = Renderer(width, height);
     game->cam = Camera(width, height);
     memset(game->Enemies, 0, ARRAY_SIZE(game->Enemies) * sizeof(enemy_t));
+    memset(game->Bullets, 0, ARRAY_SIZE(game->Bullets) * sizeof(bullet_t));
 }
 
 void Load(Game *game)
 {
     auto player = LoadTexture(&game->Resources, "rock.jpg");
     auto id = LoadShader(&game->Resources, "spriteBatchBorder");
-    auto enemy = LoadTexture(&game->Resources, "kyle.jpg");
+    auto bullet = LoadTexture(&game->Resources, "default.png");
     game->MapShader = &game->Resources.Shaders[LoadShader(&game->Resources, "map")];
     game->Batcher.default_shader = &game->Resources.Shaders[id];
     game->GameMap = LoadMap("./Data/Maps/Dungeon.tmx");
@@ -74,6 +81,11 @@ void Load(Game *game)
     enemySprite.Dim = Vector3(20, 20, 1);
     enemySprite.Tex = game->Resources.Textures[player];
     game->EnemySprite = enemySprite;
+
+    Sprite bulletSprite = {};
+    bulletSprite.Dim = Vector3(5, 5, 1);
+    bulletSprite.Tex = game->Resources.Textures[bullet];
+    game->BulletSprite = bulletSprite;
 }
 
 void Update(Game *game, f64 dt, Input const *input, f64 ticks)
@@ -124,6 +136,46 @@ void Update(Game *game, f64 dt, Input const *input, f64 ticks)
             game->Enemies[i].LastTickTime = ticks;
         }
     }
+
+    if (input->Keys.IsKeyPressed(Keys::Space)) {
+        auto dir = glm::normalize(converted - Vector2(game->player.Graphic.Pos));
+        if(ticks - game->LastPlayerBullet > 0.25) {
+            game->LastPlayerBullet = ticks;
+            if (game->CurrentBulletIndex < game->NumBullets - 1) {
+                Sprite b = game->BulletSprite;
+                b.Pos = game->player.Graphic.Pos + 10.0f;
+                game->Bullets[game->CurrentBulletIndex++] = {ticks, b, dir};
+            }
+        }
+    }
+
+    {
+        i32 NumBulletsDeleted = 0;
+        i32 KnownGoodIndex = 0;
+        for (int i = 0; i < game->CurrentBulletIndex; i++) {
+            if ((ticks - game->Bullets[i].StartTime) < BulletTimeToLive) {
+                game->Bullets[KnownGoodIndex++] = game->Bullets[i];
+            } else {
+                NumBulletsDeleted++;
+            }
+        }
+
+        game->CurrentBulletIndex -= NumBulletsDeleted;
+    }
+
+    {
+        i32 NumEnemiesDeleted = 0;
+        i32 KnownGoodIndex = 0;
+        for (int i = 0; i < game->CurrentEnemyIndex; i++) {
+            if (game->Enemies[i].Health > 0) {
+                game->Enemies[KnownGoodIndex++] = game->Enemies[i];
+            } else {
+                NumEnemiesDeleted++;
+            }
+        }
+
+        game->CurrentEnemyIndex -= NumEnemiesDeleted;
+    }
 }
 
 void FixedUpdate(Game *game, f64 dt, Input const *mouse, f64 ticks)
@@ -134,6 +186,23 @@ void FixedUpdate(Game *game, f64 dt, Input const *mouse, f64 ticks)
     for (i32 i = 0; i < game->CurrentEnemyIndex; ++i)
     {
         game->Enemies[i].Update(dt);
+    }
+
+    for (i32 i = 0; i < game->CurrentBulletIndex; ++i)
+    {
+        game->Bullets[i].Graphic.Pos += Vector3(BulletSpeed * game->Bullets[i].Direction, 1.0);
+        for (i32 j = 0; j < game->CurrentEnemyIndex; j++) {
+            Rectangle rect = {};
+            enemy_t e =  game->Enemies[j];
+            rect.x = e.Graphic.Pos.x;
+            rect.y = e.Graphic.Pos.y;
+            rect.height = 20;
+            rect.width = 20;
+            if (IsPointInRect(rect, game->Bullets[i].Graphic.Pos)) {
+                game->Enemies[j].Health = 0;
+                game->Bullets[i].StartTime = 0; // mark to be destroyed
+            }
+        }
     }
 }
 
@@ -146,7 +215,8 @@ void Render(Game *game)
     ImGui::Checkbox("RenderFloor", &RenderFloor);
     ImGui::Checkbox("RenderWalls", &RenderWalls);
     ImGui::Text("PathLength %d", game->player.Path.Index + 1);
-    ImGui::Text("Num Enemies %d", game->CurrentEnemyIndex + 1);
+    ImGui::Text("Num Enemies %d", game->CurrentEnemyIndex);
+    ImGui::Text("Num Bullets %d", game->CurrentBulletIndex);
     if (ImGui::Button("Spawn Enemy"))
     {
         if (game->CurrentEnemyIndex < Game::NumEnemies)
@@ -176,6 +246,12 @@ void Render(Game *game)
     {
         game->Batcher.draw(game->Enemies[i].Graphic);
     }
+
+    for (int i = 0; i < game->CurrentBulletIndex; i++)
+    {
+        game->Batcher.draw(game->Bullets[i].Graphic);
+    }
+
     game->Batcher.end();
     game->Batcher.render_batches(&game->Rendering);
     // Draw walls
