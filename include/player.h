@@ -29,7 +29,7 @@ struct Player
         if (CurrentIndexInPath <= Path.Index)
         {
             auto currentDest = Path.Tiles[CurrentIndexInPath];
-            if (IsPointInRect(currentDest.Rect, Vector2(Graphic.Pos)))
+            if (IsPointInRect(currentDest.Rect, Vector2(Graphic.Pos) + 10.0f))
             {
                 CurrentIndexInPath++;
                 currentDest = Path.Tiles[CurrentIndexInPath];

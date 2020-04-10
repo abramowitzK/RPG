@@ -112,15 +112,19 @@ void Update(Game *game, f64 dt, Input const *input, f64 ticks)
 
     if (input->Mouse.GetLeftButtonHeld())
     {
-        game->player.Path = {};
-        game->player.CurrentIndexInPath = 1;
+        // if (glm::length(converted - Vector2(game->player.Graphic.Pos)) < 100.0f)
+        // {
+        //     // Short distance make a simple path
+        //     // Todo make sure we don't walk through obstacles
+        //     game->player.Path.Tiles[0].Rect = {32, 32, game->player.Graphic.Pos.x + 10, game->player.Graphic.Pos.y + 10};
+        //     game->player.Path.Tiles[0].Flags = MapTileFlags::Walkable;
+        //     game->player.Path.Tiles[1].Flags = MapTileFlags::Walkable;
+        //     game->player.Path.Tiles[1].Rect = {32, 32, converted.x, converted.y};
+        //     game->player.Path.Index = 2;
+        // }
         if (game->GameMap->Layers[1]->FindPath(game->player.Graphic.Pos, converted, &game->player.Path))
         {
-        }
-        game->GameMap->Layers[0]->RestoreOldPixelData();
-        for (int i = 0; i <= game->player.Path.Index; ++i)
-        {
-            game->GameMap->Layers[0]->HighlightTile(game->player.Path.Tiles[i].Index * 2);
+            game->player.CurrentIndexInPath = 1;
         }
     }
 
@@ -137,11 +141,14 @@ void Update(Game *game, f64 dt, Input const *input, f64 ticks)
         }
     }
 
-    if (input->Keys.IsKeyPressed(Keys::Space)) {
+    if (input->Keys.IsKeyPressed(Keys::Space))
+    {
         auto dir = glm::normalize(converted - Vector2(game->player.Graphic.Pos));
-        if(ticks - game->LastPlayerBullet > 0.25) {
+        if (ticks - game->LastPlayerBullet > 0.25)
+        {
             game->LastPlayerBullet = ticks;
-            if (game->CurrentBulletIndex < game->NumBullets - 1) {
+            if (game->CurrentBulletIndex < game->NumBullets - 1)
+            {
                 Sprite b = game->BulletSprite;
                 b.Pos = game->player.Graphic.Pos + 10.0f;
                 game->Bullets[game->CurrentBulletIndex++] = {ticks, b, dir};
@@ -152,10 +159,14 @@ void Update(Game *game, f64 dt, Input const *input, f64 ticks)
     {
         i32 NumBulletsDeleted = 0;
         i32 KnownGoodIndex = 0;
-        for (int i = 0; i < game->CurrentBulletIndex; i++) {
-            if ((ticks - game->Bullets[i].StartTime) < BulletTimeToLive) {
+        for (int i = 0; i < game->CurrentBulletIndex; i++)
+        {
+            if ((ticks - game->Bullets[i].StartTime) < BulletTimeToLive)
+            {
                 game->Bullets[KnownGoodIndex++] = game->Bullets[i];
-            } else {
+            }
+            else
+            {
                 NumBulletsDeleted++;
             }
         }
@@ -166,10 +177,14 @@ void Update(Game *game, f64 dt, Input const *input, f64 ticks)
     {
         i32 NumEnemiesDeleted = 0;
         i32 KnownGoodIndex = 0;
-        for (int i = 0; i < game->CurrentEnemyIndex; i++) {
-            if (game->Enemies[i].Health > 0) {
+        for (int i = 0; i < game->CurrentEnemyIndex; i++)
+        {
+            if (game->Enemies[i].Health > 0)
+            {
                 game->Enemies[KnownGoodIndex++] = game->Enemies[i];
-            } else {
+            }
+            else
+            {
                 NumEnemiesDeleted++;
             }
         }
@@ -191,14 +206,16 @@ void FixedUpdate(Game *game, f64 dt, Input const *mouse, f64 ticks)
     for (i32 i = 0; i < game->CurrentBulletIndex; ++i)
     {
         game->Bullets[i].Graphic.Pos += Vector3(BulletSpeed * game->Bullets[i].Direction, 1.0);
-        for (i32 j = 0; j < game->CurrentEnemyIndex; j++) {
+        for (i32 j = 0; j < game->CurrentEnemyIndex; j++)
+        {
             Rectangle rect = {};
-            enemy_t e =  game->Enemies[j];
+            enemy_t e = game->Enemies[j];
             rect.x = e.Graphic.Pos.x;
             rect.y = e.Graphic.Pos.y;
             rect.height = 20;
             rect.width = 20;
-            if (IsPointInRect(rect, game->Bullets[i].Graphic.Pos)) {
+            if (IsPointInRect(rect, game->Bullets[i].Graphic.Pos))
+            {
                 game->Enemies[j].Health = 0;
                 game->Bullets[i].StartTime = 0; // mark to be destroyed
             }
